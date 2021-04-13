@@ -83,10 +83,6 @@ def update_google_campaign(customer_id, campaign_id, campaign_time, status):
     campaign.resource_name = campaign_service.campaign_path(
         customer_id, campaign_id
     )
-
-    campaign_status_enum = client.get_type(
-        "CampaignStatusEnum"
-    ).CampaignStatus.PAUSED
     
     campaign.network_settings.target_search_network = False
     # Retrieve a FieldMask for the fields configured in the campaign.
