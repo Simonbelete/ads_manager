@@ -196,9 +196,12 @@ def main():
         # Every {SECONDS} check if there is any campign to close
         for i, campaign in enumerate(RUNNABLE_CAMPAIGNS):
             if SECONDS == (campaign['start_second'] + int(campaign['details'][3])):
-
+                # Stop running the campign, 
+                # @param campaign_time doesn't matter what the value is
+                update_google_campaign(customer_id=campaign['details'][0], campaign_id=campaign['details'][1], campaign_time=86400, status=PAUSE_CAMPAIGN)
                 del RUNNABLE_CAMPAIGNS[i]
-
+        print(f'Time {SECONDS}')
+        print(RUNNABLE_CAMPAIGNS)
         SECONDS += INTERVAL
 
 if __name__ == '__main__':
