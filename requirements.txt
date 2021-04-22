@@ -1,3 +1,0 @@
-google-ads
-psycopg2
-python-dotenv
