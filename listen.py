@@ -17,3 +17,5 @@ class Listen(object):
             print('Caught Keyboard Interrupt...')
             logger.exception('Caught keyboard interrupt from postgresql listening')
             sys.exit(0)
+        finally:
+            stop_all_campign()
