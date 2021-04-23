@@ -1,5 +1,4 @@
-from listen import Listen
+import db
 
-listen = Listen()
-
-listen.run_forever()
+if __name__ == '__main__':
+    CONNECTION = db.connect()
