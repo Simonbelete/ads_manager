@@ -9,7 +9,8 @@ from google.api_core import protobuf_helpers
 from configuration import CONFIG
 
 cwd = os.getcwd() # Current directory 
-_DATE_FORMAT = CONFIG.get('DEFAULT', 'DATE_FORMAT')
+# TODO: Read from ini file CONFIG.get('DEFAULT', 'DATE_FORMAT')
+_DATE_FORMAT = '%Y%m%d'
 googleads_client = GoogleAdsClient.load_from_storage(f'{cwd}/google-ads.yaml')
 
 def update_google_campaign(customer_id, campaign_id, campaign_time, status):
@@ -21,7 +22,6 @@ def update_google_campaign(customer_id, campaign_id, campaign_time, status):
     campaign = campaign_operation.update
 
     campaign_status = None
-
     if status == CONFIG.get('DEFAULT', 'PAUSE_CAMPAIGN'):
         campaign_status = campaign_status_enum = client.get_type(
                             "CampaignStatusEnum"
@@ -34,9 +34,9 @@ def update_google_campaign(customer_id, campaign_id, campaign_time, status):
     campaign.status = campaign_status
 
     start_time = datetime.date.today() + datetime.timedelta(days=0)
-    campaign.start_date = datetime.date.strftime(start_time, _DATE_FORMAT)
+    # campaign.start_date = datetime.date.strftime(start_time, _DATE_FORMAT)
     end_time = start_time + datetime.timedelta(seconds=campaign_time)
-    campaign.end_date = datetime.date.strftime(end_time, _DATE_FORMAT)
+    campaign.end_date = None
 
     campaign.resource_name = campaign_service.campaign_path(
         customer_id, campaign_id

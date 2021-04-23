@@ -25,11 +25,10 @@ def connect():
         -------
             void
     """
-    global CONNECTION
-    global PARAM
     try:
         print('Connecting to the PostgreSQL databse...')
-        CONNECTION = psycopg2.connect(**PARAM)
+        connection = psycopg2.connect(**PARAM)
+        return connection
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         sys.exit(0)

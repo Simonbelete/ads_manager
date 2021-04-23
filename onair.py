@@ -1,4 +1,3 @@
-
 class OnAir(object):
     # Select non expired campaigns with status `active`
     QUERY = """

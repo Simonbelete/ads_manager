@@ -11,7 +11,6 @@ from google.api_core import protobuf_helpers
 from configuration import CONFIG
 
 cwd = os.getcwd() # Current directory 
-_DATE_FORMAT = CONFIG.get('DEFAULT', 'DATE_FORMAT')
 googleads_client = GoogleAdsClient.load_from_storage(f'{cwd}/google-ads.yaml')
 
 def update_google_campaign(customer_id, campaign_id):
