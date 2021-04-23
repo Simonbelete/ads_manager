@@ -8,8 +8,6 @@ from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.client import GoogleAdsClient
 from google.api_core import protobuf_helpers
 
-from configuration import CONFIG
-
 cwd = os.getcwd() # Current directory 
 googleads_client = GoogleAdsClient.load_from_storage(f'{cwd}/google-ads.yaml')
 

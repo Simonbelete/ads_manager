@@ -1,5 +1,6 @@
 import os
 import db
+import datetime
 
 from crontab import CronTab
 from google_campaign import update_google_campaign
@@ -20,12 +21,19 @@ if __name__ == '__main__':
         # Since google allow ads to run a minimum of 1 day, set the end date to
         # a minimum of 1 day else it wont work 
         end_second = campaign[3]
-        if int(campaign[3]) < 86400: # 86400 = 1 day
-            end_second = 86400
+        if int(campaign[3]) < 60: # 1 Minute
+            end_second = 60
 
         # Start running the campign
         update_google_campaign(customer_id=campaign[0], campaign_id=campaign[1], campaign_time=end_second, status=CONFIG.get('DEFAULT', 'START_CAMPAIGN'))
 
-    #     # Set a cron job
-    #     cmd = f"python{CONFIG.get('DEFAULT', 'PYTHON_VERSION')} {cwd}/cli/stop_google_campaign.py -c={campaign[0]} -i={campaign[1]} &>> {cwd}/{campaign[0]}-{campaign[1]}.$(date +%Y-%m-%d_%H:%M).log"
-    #     job = cron.new(command=cmd)
+        # Set a cron job
+        cmd = f"python{CONFIG.get('DEFAULT', 'PYTHON_VERSION')} {cwd}/cli/stop_google_campaign.py -c={campaign[0]} -i={campaign[1]} > {cwd}/logs/{campaign[0]}-{campaign[1]}.$(date +%Y-%m-%d_%H:%M).log 2>&1"
+        job = cron.new(command=cmd)
+
+        # Calculate cronjob start date
+        start_time = datetime.datetime.now()
+        end_time = start_time + datetime.timedelta(seconds=int(end_second))
+
+        job.setall(end_time)
+        cron.write()
