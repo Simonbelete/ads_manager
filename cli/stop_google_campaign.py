@@ -1,5 +1,3 @@
-import argparse
-
 import os
 import argparse
 import datetime
@@ -7,19 +5,28 @@ import datetime
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.client import GoogleAdsClient
 from google.api_core import protobuf_helpers
+from crontab import CronTab
 
-cwd = os.getcwd() # Current directory 
-googleads_client = GoogleAdsClient.load_from_storage(f'{cwd}/google-ads.yaml')
+def remove_cron_job(customer_id, campaign_id, cwd):
+    cron = CronTab(user=True)
 
-def update_google_campaign(customer_id, campaign_id):
-    global googleads_client, _DATE_FORMAT
+    cmd = f"python3 {cwd}/cli/stop_google_campaign.py -c={customer_id} -i={campaign_id} -cw={cwd} > {cwd}/logs/{customer_id}-{campaign_id}.$(date +%Y-%m-%d_%H:%M).log 2>&1"
+    print(cmd)
+    job = cron.find_command(cmd)
+    cron.remove(job)
+    # Writes content to crontab
+    cron.write()
+
+def update_google_campaign(customer_id, campaign_id, cwd):
+    googleads_client = GoogleAdsClient.load_from_storage(f'{cwd}/google-ads.yaml')
+
     client = googleads_client
     campaign_service = client.get_service("CampaignService")
     # Create campaign operation.
     campaign_operation = client.get_type("CampaignOperation")
     campaign = campaign_operation.update
 
-    campaign_status = campaign_status_enum = client.get_type(
+    campaign_status = client.get_type(
                             "CampaignStatusEnum"
                         ).CampaignStatus.PAUSED
 
@@ -40,6 +47,8 @@ def update_google_campaign(customer_id, campaign_id):
         customer_id=customer_id, operations=[campaign_operation]
     )
 
+    remove_cron_job(customer_id, campaign_id, cwd)
+
     print(f"Updated campaign {campaign_response.results[0].resource_name}.")
 
 
@@ -57,7 +66,16 @@ parser.add_argument(
 parser.add_argument(
     "-i", "--campaign_id", type=str, required=True, help="The campaign ID."
 )
+
+parser.add_argument(
+    "-cw",
+    "--cwd",
+    type=str,
+    required=True,
+    help="Repository directory"
+)
+
 args = parser.parse_args()
 
 
-update_google_campaign(args.customer_id, args.campaign_id)
+update_google_campaign(args.customer_id, args.campaign_id, args.cwd)
