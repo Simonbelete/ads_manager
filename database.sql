@@ -92,55 +92,16 @@ WHERE ad_id = '11';
 CREATE OR REPLACE FUNCTION onair_change() RETURNS trigger AS $$
 DECLARE payload TEXT;
 BEGIN
-
-    payload := json_build_object(
-    'actualad',NEW.actualad,
-	'ad', NEW.ad,
-	'ad_trailer', NEW.ad_trailer,
-	'ad_teleshop', NEW.ad_teleshop,
-    -- 'id_country', NEW.id_country,
-    'channel_code', NEW.channel_code,
-	'id', NEW.id
-	
-  );
- 
- 		 PERFORM pg_notify('onair_changes',
-						  json_build_object(
-						  	 'id', NEW.id,	
-							 'channel_code', NEW.channel_code,
-							 'actualad',NEW.actualad,
-							 'ad', NEW.ad,
-							 'ad_trailer', NEW.ad_trailer,
-							 'ad_teleshop', NEW.ad_teleshop
-						  	)::text);
-	/*	INSERT INTO debug_trigger VALUES ('onair_changes', json_build_object(
-						  	 'id', NEW.id,	
-							 'channel_code', NEW.channel_code,
-							 'actualad',NEW.actualad,
-							 'ad', NEW.ad,
-							 'ad_trailer', NEW.ad_trailer,
-							 'ad_teleshop', NEW.ad_teleshop
-						  	)::text);	  */
-						  
-    /*PERFORM pg_notify('onair_changes',json_build_object('operation', TG_OP,'record', row_to_json(NEW))::text);*/
-    -- PERFORM pg_notify('onairchanges',(select row_to_json(NEW) from ( select actualad, id_country, onair.channel_code from NEW ) NEW)::text);
-    /*(select row_to_json(NEW) from ( select actualad, id_country, onair.channel_code from NEW ) NEW)*/
-
-  /*PERFORM pg_notify('onair_changes',json_build_object('operation', TG_OP,'record',
-   (select row_to_json(NEW) from ( select actualad, id_country, onair.channel_code from NEW ) NEW))::text);*/
-
-   /* {"id": 3, "state": "active"}*/
-   -- PERFORM pg_notify('onairchanges', select row_to_json(a) from (select NEW.actualad as 'actualad', NEW.id_country as 'id_country', NEW.country_code as 'country_code') a)
-   -- PERFORM pg_notify('onairchanges', json_build_object('actualad', NEW.actualad, 'id_country', NEW.ad, 'channel_code', New."channel_code")::text);
-  
-  
- -- INSERT INTO test_trig (name) VALUES  (payload);
-   --INSERT INTO debug_trigger VALUES (payload::text);
-	--INSERT INTO debug_trigger VALUES (NEW.actualad, 'id_country', NEW.ad, 'channel_code', New."channel_code", _notification_text);
-  --PERFORM pg_notify('onair_changes', payload);
+ 	PERFORM pg_notify(
+		'onair_changes',
+		json_build_object(
+			'ad_id', NEW.ad_id
+			)::text
+	);
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER onair_update_trigger AFTER UPDATE ON onair FOR EACH ROW EXECUTE PROCEDURE onair_change();
+CREATE TRIGGER onair_insert_trigger AFTER INSERT ON onair FOR EACH ROW EXECUTE PROCEDURE onair_change();

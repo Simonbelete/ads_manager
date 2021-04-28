@@ -4,6 +4,7 @@ import time
 import select
 import psycopg2
 import socket
+import json
 import datetime
 
 from logger import logger
@@ -16,7 +17,7 @@ from google_campaign import update_google_campaign
 class Listen(object):
     def __init__(self):
         load_dotenv()  # take environment variables from .env.
-        self.NOTIFY_NAME = 'table_update' # change this to the postgresql notification name
+        self.NOTIFY_NAME = 'onair_changes' # change this to the postgresql notification name
         self.param = {
             'host': os.getenv('DB_HOST'),                               # type: string, Database Host Name from `.env` file
             'port': os.getenv('DB_PORT'),                               # type: string, Database Host Name from `.env` file                                              
@@ -53,7 +54,7 @@ class Listen(object):
             self.connect()
 
 
-    def get_campaign_detail(campaign_id):
+    def get_campaign_detail(self, campaign_id):
         query = f"""
             SELECT
                 booster_ads_app.owner_ad_id as owner_ad_id,
@@ -87,6 +88,7 @@ class Listen(object):
             print(f'{bcolors.OKBLUE}INFO: Waiting for notifications on channel {self.NOTIFY_NAME} {bcolors.ENDC}')
 
             while True:
+                time.sleep(4)
                 # This is a blocking call that will return if and when any file descriptor in the list has new data
                 # We see that there is fresh information on our connection, better poll and read!
                 select.select([self.connection], [], [], 10) # Timeout 10sec
@@ -95,7 +97,9 @@ class Listen(object):
                 if self.connection.notifies != []:
                     # Pop notification from list
                     notify = self.connection.notifies.pop(0)
+                    print(notify) # debug
                     j_notify = json.loads(notify.payload)
+                    print(j_notify['ad_id'])
                     new_campaign = self.get_campaign_detail(j_notify['ad_id'])
                     print(notify)
 
@@ -135,6 +139,7 @@ class Listen(object):
         except KeyboardInterrupt as k_ex:
             print('Caught Keyboard Interrupt...')
             logger.exception('Caught keyboard interrupt from postgresql listening')
+            self.connection.close()
             sys.exit(1)
         except Exception as ex:
             # Inorder to limit the number of open connection to 1
